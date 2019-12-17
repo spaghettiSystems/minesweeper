@@ -76,12 +76,7 @@ public class Minesweeper {
         mineSweeperTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                int rowAtMouse = mineSweeperTable.rowAtPoint(e.getPoint());
-                int colAtMouse = mineSweeperTable.columnAtPoint(e.getPoint());
-                if (rowAtMouse < 0 || colAtMouse < 0) {
-                    return;
-                }
-                mineSweeperTable.changeSelection(rowAtMouse, colAtMouse, false, false);
+                setSelectionToCurrentMouse(e);
                 switch (e.getButton()) {
                     case MouseEvent.BUTTON1:
                         if (game.clickCell(mineSweeperTable.getSelectedRow(), mineSweeperTable.getSelectedColumn())) {
@@ -235,6 +230,21 @@ public class Minesweeper {
                 }
             }
         });
+        mineSweeperTable.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                setSelectionToCurrentMouse(e);
+            }
+        });
+    }
+
+    private void setSelectionToCurrentMouse(MouseEvent e) {
+        int rowAtMouse = mineSweeperTable.rowAtPoint(e.getPoint());
+        int colAtMouse = mineSweeperTable.columnAtPoint(e.getPoint());
+        if (rowAtMouse < 0 || colAtMouse < 0) {
+            return;
+        }
+        mineSweeperTable.changeSelection(rowAtMouse, colAtMouse, false, false);
     }
 
     public static void main(String[] args) {
