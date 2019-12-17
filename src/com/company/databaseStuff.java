@@ -11,7 +11,7 @@ public class databaseStuff {
 
     databaseStuff() throws SQLException, ClassNotFoundException {
         Class.forName("org.postgresql.Driver");
-        db = DriverManager.getConnection("jdbc:postgresql://localhost:5432/dbtest", "postgres", "admin");
+        db = DriverManager.getConnection("jdbc:postgresql://localhost:5432/scorelist", "newuser", "admin");
 
         updateTable();
 
@@ -22,14 +22,14 @@ public class databaseStuff {
 
         Statement stmt = db.createStatement();
 
-        String SQL = "SELECT COUNT(*) FROM scorelist.scorelist";
+        String SQL = "SELECT COUNT(*) FROM scorelist";
         ResultSet count = stmt.executeQuery(SQL);
         count.next();
         length = count.getInt(1);
 
         table = new Object[length][2];
 
-        SQL = "SELECT * FROM scorelist.scorelist ORDER BY scores DESC";
+        SQL = "SELECT * FROM scorelist ORDER BY score DESC";
         ResultSet rs = stmt.executeQuery(SQL);
 
         if(length == 0){
@@ -39,13 +39,13 @@ public class databaseStuff {
         int i = 0;
         while(rs.next() && i < length){
             table[i][0] = rs.getString("names");
-            table[i][1] = rs.getString("scores");
+            table[i][1] = rs.getString("score");
             i++;
         }
     }
 
     public void addRecord(String name, int score) throws SQLException {
-        String SQL = "INSERT INTO scorelist.scorelist "
+        String SQL = "INSERT INTO scorelist "
                 + "VALUES(?,?,?)";
 
         PreparedStatement pstmt = db.prepareStatement(SQL);

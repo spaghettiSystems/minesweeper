@@ -246,13 +246,14 @@ public class Minesweeper {
             public void actionPerformed(ActionEvent e) {
                 try {
                     db = new databaseStuff();
+                    scoreBoard.setModel(new ScoreboardTableModel());
                 } catch (SQLException ex) {
                     JOptionPane.showMessageDialog(mainPanel, "Whoops!", "SQL Error", JOptionPane.ERROR_MESSAGE);
+                    System.out.println(ex.getMessage());
                 } catch (ClassNotFoundException ex) {
                     JOptionPane.showMessageDialog(mainPanel, "Whoops!", "SQL Error", JOptionPane.ERROR_MESSAGE);
                 }
 
-                scoreBoard.setModel(new ScoreboardTableModel());
 
             }
         });
