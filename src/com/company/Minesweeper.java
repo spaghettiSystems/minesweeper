@@ -15,6 +15,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 
 import static java.lang.System.exit;
 
@@ -26,6 +27,7 @@ public class Minesweeper {
     int minutes;
     int hours;
     boolean literalBombs;
+    databaseStuff db;
     private JTable mineSweeperTable;
     private JPanel mainPanel;
     private JButton resetButton;
@@ -49,6 +51,9 @@ public class Minesweeper {
     private JButton openButton;
     private JTextField openFileTextField;
     private JCheckBox bombValueLiteral;
+    private JTable scoreBoard;
+    private JButton connectButton;
+    private JTextField anonymousTextField;
 
     public Minesweeper() {
 
@@ -236,6 +241,21 @@ public class Minesweeper {
                 setSelectionToCurrentMouse(e);
             }
         });
+        connectButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    db = new databaseStuff();
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(mainPanel, "Whoops!", "SQL Error", JOptionPane.ERROR_MESSAGE);
+                } catch (ClassNotFoundException ex) {
+                    JOptionPane.showMessageDialog(mainPanel, "Whoops!", "SQL Error", JOptionPane.ERROR_MESSAGE);
+                }
+
+                scoreBoard.setModel(new ScoreboardTableModel());
+
+            }
+        });
     }
 
     private void setSelectionToCurrentMouse(MouseEvent e) {
@@ -286,17 +306,39 @@ public class Minesweeper {
 
     }
 
+    private int calculateUserScore() {
+        return (int) ((((double) game.flaggedBombs) * 100) / ((double) seconds + ((double) 60 * minutes) + ((double) 3600 * hours)));
+    }
+
     private void userLost() {
+        if (db != null) {
+            try {
+                db.addRecord(anonymousTextField.getText(), calculateUserScore());
+                db.updateTable();
+                scoreBoard.updateUI();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
         ImageIcon lossIcon = new ImageIcon(getClass().getResource("/com/company/icon_64_lost.gif"));
         resetButton.setIcon(lossIcon);
-        JOptionPane.showMessageDialog(mainPanel, "You lost!", "Sad!", JOptionPane.INFORMATION_MESSAGE, lossIcon);
+        JOptionPane.showMessageDialog(mainPanel, "You lost! Your score is " + calculateUserScore(), "Sad!", JOptionPane.INFORMATION_MESSAGE, lossIcon);
         resetButton.doClick();
     }
 
     private void userWon() {
+        if (db != null) {
+            try {
+                db.addRecord(anonymousTextField.getText(), calculateUserScore());
+                db.updateTable();
+                scoreBoard.updateUI();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
         ImageIcon winIcon = new ImageIcon(getClass().getResource("/com/company/icon_64_win.png"));
         resetButton.setIcon(winIcon);
-        JOptionPane.showMessageDialog(mainPanel, "You won!", "Congratulations!", JOptionPane.INFORMATION_MESSAGE, winIcon);
+        JOptionPane.showMessageDialog(mainPanel, "You won! Your score is " + calculateUserScore(), "Congratulations!", JOptionPane.INFORMATION_MESSAGE, winIcon);
         resetButton.doClick();
     }
 
@@ -411,7 +453,7 @@ public class Minesweeper {
         mineSweeperTable.setShowHorizontalLines(true);
         tableScrollPane.setViewportView(mineSweeperTable);
         final JPanel panel4 = new JPanel();
-        panel4.setLayout(new GridLayoutManager(5, 2, new Insets(10, 10, 10, 10), -1, -1));
+        panel4.setLayout(new GridLayoutManager(6, 2, new Insets(10, 10, 10, 10), -1, -1));
         panel4.setMinimumSize(new Dimension(-1, -1));
         tabbedPane1.addTab("Options", panel4);
         rowsTextField = new JTextField();
@@ -437,8 +479,14 @@ public class Minesweeper {
         bombValueLiteral = new JCheckBox();
         bombValueLiteral.setText("\"Bombs\" is a probability");
         panel4.add(bombValueLiteral, new GridConstraints(3, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label5 = new JLabel();
+        label5.setText("Name");
+        panel4.add(label5, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        anonymousTextField = new JTextField();
+        anonymousTextField.setText("Anonymous");
+        panel4.add(anonymousTextField, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JPanel panel5 = new JPanel();
-        panel5.setLayout(new GridLayoutManager(3, 3, new Insets(0, 0, 0, 0), -1, -1));
+        panel5.setLayout(new GridLayoutManager(3, 3, new Insets(10, 10, 10, 10), -1, -1));
         panel5.setMinimumSize(new Dimension(-1, -1));
         tabbedPane1.addTab("Load/Save", panel5);
         chooseFileButton1 = new JButton();
@@ -462,6 +510,17 @@ public class Minesweeper {
         panel5.add(chooseFileButton, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, 1, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final Spacer spacer3 = new Spacer();
         panel5.add(spacer3, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        final JPanel panel6 = new JPanel();
+        panel6.setLayout(new GridLayoutManager(2, 1, new Insets(10, 10, 10, 10), -1, -1));
+        tabbedPane1.addTab("Scores", panel6);
+        connectButton = new JButton();
+        connectButton.setText("Connect");
+        panel6.add(connectButton, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JScrollPane scrollPane1 = new JScrollPane();
+        panel6.add(scrollPane1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        scoreBoard = new JTable();
+        scoreBoard.setPreferredScrollableViewportSize(new Dimension(-1, -1));
+        scrollPane1.setViewportView(scoreBoard);
     }
 
     /**
@@ -502,6 +561,29 @@ public class Minesweeper {
         public Class getColumnClass(int c) {
             return ImageIcon.class;
             //return getValueAt(0, c).getClass();
+        }
+    }
+
+    private class ScoreboardTableModel extends AbstractTableModel {
+
+        @Override
+        public int getRowCount() {
+            return db.length;
+        }
+
+        @Override
+        public int getColumnCount() {
+            return 2;
+        }
+
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            return db.table[rowIndex][columnIndex];
+        }
+
+        @Override
+        public String getColumnName(int col) {
+            return db.columnNames[col];
         }
     }
 }
