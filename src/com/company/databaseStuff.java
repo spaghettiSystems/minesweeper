@@ -20,17 +20,17 @@ public class databaseStuff {
 
     public void updateTable() throws SQLException {
 
-        Statement stmt = db.createStatement();
+        Statement sqlStatement = db.createStatement();
 
         String SQL = "SELECT COUNT(*) FROM scorelist";
-        ResultSet count = stmt.executeQuery(SQL);
+        ResultSet count = sqlStatement.executeQuery(SQL);
         count.next();
         length = count.getInt(1);
 
         table = new Object[length][2];
 
         SQL = "SELECT * FROM scorelist ORDER BY score DESC";
-        ResultSet rs = stmt.executeQuery(SQL);
+        ResultSet rs = sqlStatement.executeQuery(SQL);
 
         if(length == 0){
             return;
@@ -48,11 +48,11 @@ public class databaseStuff {
         String SQL = "INSERT INTO scorelist "
                 + "VALUES(?,?,?)";
 
-        PreparedStatement pstmt = db.prepareStatement(SQL);
+        PreparedStatement insertionStatement = db.prepareStatement(SQL);
 
-        pstmt.setString(1, name);
-        pstmt.setInt(2, score);
-        pstmt.setInt(3,length + 1);
-        pstmt.executeUpdate();
+        insertionStatement.setString(1, name);
+        insertionStatement.setInt(2, score);
+        insertionStatement.setInt(3,length + 1);
+        insertionStatement.executeUpdate();
     }
 }

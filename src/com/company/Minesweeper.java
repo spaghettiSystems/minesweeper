@@ -143,7 +143,7 @@ public class Minesweeper {
             public void actionPerformed(ActionEvent actionEvent) {
                 CardLayout layout = (CardLayout) cardPanel.getLayout();
                 layout.show(cardPanel, "Card2");
-                tabbedPane1.setSelectedIndex(2);
+                tabbedPane1.setSelectedIndex(1);
             }
         });
         optionsButton.addActionListener(new ActionListener() {
@@ -151,7 +151,7 @@ public class Minesweeper {
             public void actionPerformed(ActionEvent actionEvent) {
                 CardLayout layout = (CardLayout) cardPanel.getLayout();
                 layout.show(cardPanel, "Card2");
-                tabbedPane1.setSelectedIndex(1);
+                tabbedPane1.setSelectedIndex(2);
             }
         });
         exitButton.addActionListener(new ActionListener() {
