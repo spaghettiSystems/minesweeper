@@ -52,8 +52,17 @@ public class GameLogic {
 
         if (firstClick) {
             firstClick = false;
-            if (realBoard.board[x][y].isBomb) {
+            /*if (realBoard.board[x][y].isBomb) {
                 moveBomb(x, y);
+            }*/
+            for (int updown = -1; updown <= 1; updown++) {
+                for (int leftright = -1; leftright <= 1; leftright++) {
+                    if (x + updown >= 0 && x + updown < realBoard.width &&
+                            y + leftright >= 0 && y + leftright < realBoard.height
+                            && realBoard.board[x + updown][y + leftright].isBomb){
+                        moveBomb(x + updown, y + leftright);
+                    }
+                }
             }
             realBoard.createNumbers();
             realBoard.displayBoard();
@@ -206,6 +215,9 @@ public class GameLogic {
     }
 
     boolean flagCell(int x, int y) {
+        if(fakeBoard[x][y] != '#' && fakeBoard[x][y] != '!'){
+            return false;
+        }
         if (realBoard.board[x][y].isFlagged) {
             totalFlags--;
             flagged++;

@@ -1,7 +1,6 @@
 package com.company;
 
 import java.sql.*;
-import java.util.ArrayList;
 
 public class databaseStuff {
     Connection db;
