@@ -33,7 +33,7 @@ public class GameLogic {
         }
     }
 
-    private void moveBomb(int x, int y) {
+    private void moveBombs(int x, int y) {
         Random random = new Random();
         int newx, newy;
 
@@ -64,7 +64,7 @@ public class GameLogic {
 
         if (firstClick) {
             firstClick = false;
-            moveBomb(x, y);
+            moveBombs(x, y);
             realBoard.createNumbers();
             realBoard.displayBoard();
         }
