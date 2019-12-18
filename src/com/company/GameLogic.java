@@ -37,33 +37,34 @@ public class GameLogic {
         Random random = new Random();
         int newx, newy;
 
-        do {
-            newx = random.nextInt(realBoard.width);
-            newy = random.nextInt(realBoard.height);
-        } while (realBoard.board[newx][newy].isBomb || newx == x && newy == y);
+        for (int updown = -1; updown <= 1; updown++) {
+            for (int leftright = -1; leftright <= 1; leftright++) {
+                if (x + updown >= 0 && x + updown < realBoard.width &&
+                        y + leftright >= 0 && y + leftright < realBoard.height
+                        && realBoard.board[x + updown][y + leftright].isBomb) {
 
-        Board.cell temp;
-        temp = realBoard.board[newx][newy];
-        realBoard.board[newx][newy] = realBoard.board[x][y];
-        realBoard.board[x][y] = temp;
+                    do {
+                        newx = random.nextInt(realBoard.width);
+                        newy = random.nextInt(realBoard.height);
+                    } while (realBoard.board[newx][newy].isBomb || (newx >= x - 1 && newx <= x + 1 && newy >= y - 1 && newy <= y + 1));
+                    //(!( newx < x - 1 || newx > x + 1 ) && !( newy < y - 1 || newy > y + 1 ))
+
+                    Board.cell temp;
+                    temp = realBoard.board[newx][newy];
+                    realBoard.board[newx][newy] = realBoard.board[x + updown][y + leftright];
+                    realBoard.board[x + updown][y + leftright] = temp;
+
+                }
+            }
+        }
+
     }
 
     boolean clickCell(int x, int y) {
 
         if (firstClick) {
             firstClick = false;
-            /*if (realBoard.board[x][y].isBomb) {
-                moveBomb(x, y);
-            }*/
-            for (int updown = -1; updown <= 1; updown++) {
-                for (int leftright = -1; leftright <= 1; leftright++) {
-                    if (x + updown >= 0 && x + updown < realBoard.width &&
-                            y + leftright >= 0 && y + leftright < realBoard.height
-                            && realBoard.board[x + updown][y + leftright].isBomb){
-                        moveBomb(x + updown, y + leftright);
-                    }
-                }
-            }
+            moveBomb(x, y);
             realBoard.createNumbers();
             realBoard.displayBoard();
         }
@@ -215,7 +216,7 @@ public class GameLogic {
     }
 
     boolean flagCell(int x, int y) {
-        if(fakeBoard[x][y] != '#' && fakeBoard[x][y] != '!'){
+        if (fakeBoard[x][y] != '#' && fakeBoard[x][y] != '!') {
             return false;
         }
         if (realBoard.board[x][y].isFlagged) {
@@ -301,7 +302,7 @@ public class GameLogic {
         void createBombs(boolean literal) {
             int number;
             Random random = new Random();
-            if(literal){
+            if (literal) {
                 for (int i = 0; i < width; i++) {
                     for (int j = 0; j < height; j++) {
                         board[i][j] = new Board.cell();
@@ -311,16 +312,14 @@ public class GameLogic {
                 for (int i = 0; i < bombRate; i++) {
                     int x = random.nextInt(width);
                     int y = random.nextInt(height);
-                    if (!board[x][y].isBomb){
+                    if (!board[x][y].isBomb) {
                         board[x][y] = new Board.cell(true);
                         bombCount++;
-                    }
-                    else {
+                    } else {
                         i--;
                     }
                 }
-            }
-            else{
+            } else {
                 for (int i = 0; i < width; i++) {
                     for (int j = 0; j < height; j++) {
                         number = random.nextInt(100);

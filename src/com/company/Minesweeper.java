@@ -111,6 +111,7 @@ public class Minesweeper {
                         int rows = Integer.parseInt(rowsTextField.getText());
                         int columns = Integer.parseInt(columnsTextField.getText());
                         int bombs = Integer.parseInt(bombsTextField.getText());
+                        anonymousTextField.setText(removeNonCharacters(anonymousTextField.getText()));
                         if (
                                 rows > 45 || rows < 15 ||
                                         columns > 45 || columns < 15 ||
@@ -314,6 +315,16 @@ public class Minesweeper {
         tableScrollPane.setPreferredSize(new Dimension(game.getRealBoard().height * 16, game.getRealBoard().width * 16 + 6));
         frame.pack();
 
+    }
+
+    String removeNonCharacters(String epic) {
+        for (int i = 0; i < epic.length(); i++) {
+            if (!((epic.charAt(i) >= 'a' && epic.charAt(i) <= 'z') || epic.charAt(i) >= 'A' && epic.charAt(i) <= 'Z')) {
+                epic = epic.replace(epic.charAt(i) + "", "");
+                i--;
+            }
+        }
+        return epic;
     }
 
     private int calculateUserScore() {
