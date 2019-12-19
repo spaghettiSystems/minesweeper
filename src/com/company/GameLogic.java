@@ -69,6 +69,7 @@ public class GameLogic {
             realBoard.displayBoard();
         }
 
+
         if (realBoard.board[x][y].isBomb) {
             clearEmptyHiddenCell(x, y);
             System.out.println("loss");
