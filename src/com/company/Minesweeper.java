@@ -286,7 +286,8 @@ public class Minesweeper {
         }
 
 
-        frame = new JFrame("main");
+        frame = new JFrame("Minesweeper");
+        frame.setIconImage((new ImageIcon(Minesweeper.class.getResource("icon_64_playing.png"))).getImage());
         frame.setContentPane(new Minesweeper().mainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
