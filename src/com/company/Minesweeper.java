@@ -328,14 +328,10 @@ public class Minesweeper {
         return epic;
     }
 
-    private int calculateUserScore() {
-        return (int) ((((double) game.flaggedBombs) * 100) / ((double) seconds + ((double) 60 * minutes) + ((double) 3600 * hours)));
-    }
-
     private void userLost() {
         if (db != null) {
             try {
-                db.addRecord(anonymousTextField.getText(), calculateUserScore());
+                db.addRecord(anonymousTextField.getText(), game.calculateUserScore(seconds, minutes, hours));
                 db.updateTable();
                 scoreBoard.updateUI();
             } catch (SQLException e) {
@@ -344,14 +340,14 @@ public class Minesweeper {
         }
         ImageIcon lossIcon = new ImageIcon(getClass().getResource("/com/company/icon_64_lost.gif"));
         resetButton.setIcon(lossIcon);
-        JOptionPane.showMessageDialog(mainPanel, "You lost! Your score is " + calculateUserScore(), "Sad!", JOptionPane.INFORMATION_MESSAGE, lossIcon);
+        JOptionPane.showMessageDialog(mainPanel, "You lost! Your score is " + game.calculateUserScore(seconds, minutes, hours), "Sad!", JOptionPane.INFORMATION_MESSAGE, lossIcon);
         resetButton.doClick();
     }
 
     private void userWon() {
         if (db != null) {
             try {
-                db.addRecord(anonymousTextField.getText(), calculateUserScore());
+                db.addRecord(anonymousTextField.getText(), game.calculateUserScore(seconds, minutes, hours));
                 db.updateTable();
                 scoreBoard.updateUI();
             } catch (SQLException e) {
@@ -360,7 +356,7 @@ public class Minesweeper {
         }
         ImageIcon winIcon = new ImageIcon(getClass().getResource("/com/company/icon_64_win.png"));
         resetButton.setIcon(winIcon);
-        JOptionPane.showMessageDialog(mainPanel, "You won! Your score is " + calculateUserScore(), "Congratulations!", JOptionPane.INFORMATION_MESSAGE, winIcon);
+        JOptionPane.showMessageDialog(mainPanel, "You won! Your score is " + game.calculateUserScore(seconds, minutes, hours), "Congratulations!", JOptionPane.INFORMATION_MESSAGE, winIcon);
         resetButton.doClick();
     }
 

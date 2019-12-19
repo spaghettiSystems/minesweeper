@@ -246,6 +246,10 @@ public class GameLogic {
         return false;
     }
 
+    public int calculateUserScore(int seconds, int minutes, int hours) {
+        return (int) ((((double) flaggedBombs) * 100) / ((double) seconds + ((double) 60 * minutes) + ((double) 3600 * hours)));
+    }
+
 
     public static class Board {
         protected int width;
