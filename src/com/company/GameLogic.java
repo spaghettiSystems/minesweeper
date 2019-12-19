@@ -60,6 +60,17 @@ public class GameLogic {
 
     }
 
+    boolean fullyOpenedWinning(){
+        for (int i = 0; i < realBoard.width; i++) {
+            for (int j = 0; j < realBoard.height; j++) {
+                if(!realBoard.board[i][j].isBomb && fakeBoard[i][j] == '#'){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     boolean clickCell(int x, int y) {
 
         if (firstClick) {
@@ -111,7 +122,7 @@ public class GameLogic {
         fakeBoard[x][y] = realBoard.board[x][y].content;
     }
 
-    void saveBoard(String fileAddress, String time) throws IOException {
+    void saveBoard(String fileAddress, String time, boolean winningCondition) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(fileAddress));
         writer.write(realBoard.width + "");
         writer.newLine();
@@ -128,6 +139,8 @@ public class GameLogic {
         writer.write(firstClick + "");
         writer.newLine();
         writer.write(time);
+        writer.newLine();
+        writer.write(winningCondition + "");
         writer.newLine();
 
         for (int i = 0; i < realBoard.width; i++) {
@@ -172,6 +185,7 @@ public class GameLogic {
         }
 
         temp2 = reader.readLine();
+        temp3 = reader.readLine();
 
         for (int i = 0; i < realBoard.width; i++) {
             temp1 = reader.readLine();
@@ -195,7 +209,7 @@ public class GameLogic {
         realBoard.updateBombCount();
         updateFlags();
 
-        return temp2;
+        return temp2 + "_" + temp3;
     }
 
     private void updateFlags() {
@@ -247,8 +261,11 @@ public class GameLogic {
         return false;
     }
 
-    public int calculateUserScore(int seconds, int minutes, int hours) {
-        return (int) ((((double) flaggedBombs) * 100) / ((double) seconds + ((double) 60 * minutes) + ((double) 3600 * hours)));
+    public int calculateUserScore(int seconds, int minutes, int hours, boolean winningCondition, boolean won) {
+        if(winningCondition){
+            return (int) ((((double) flaggedBombs) * 100) / ((double) seconds + ((double) 60 * minutes) + ((double) 3600 * hours)));
+        }
+        return (int) ((((double) realBoard.bombCount) * 100)/(((double) ((seconds > 10)? seconds : 5) + ((double) 60 * minutes) + ((double) 3600 * hours)) * ((won)? 1:300)));
     }
 
 

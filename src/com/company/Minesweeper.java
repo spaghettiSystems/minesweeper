@@ -27,6 +27,7 @@ public class Minesweeper {
     int minutes;
     int hours;
     boolean literalBombs;
+    boolean traditionalWinning = false;
     databaseStuff db;
     private JTable mineSweeperTable;
     private JPanel mainPanel;
@@ -55,6 +56,7 @@ public class Minesweeper {
     private JButton connectButton;
     private JTextField anonymousTextField;
     private JButton scoresButton;
+    private JCheckBox traditionalWinningCheckbox;
 
     public Minesweeper() {
 
@@ -88,10 +90,13 @@ public class Minesweeper {
                         if (game.clickCell(mineSweeperTable.getSelectedRow(), mineSweeperTable.getSelectedColumn())) {
                             userLost();
                         }
+                        if (!traditionalWinning && game.fullyOpenedWinning()) {
+                            userWon();
+                        }
                         mineSweeperTable.repaint();
                         break;
                     case MouseEvent.BUTTON3:
-                        if (game.flagCell(mineSweeperTable.getSelectedRow(), mineSweeperTable.getSelectedColumn())) {
+                        if (game.flagCell(mineSweeperTable.getSelectedRow(), mineSweeperTable.getSelectedColumn()) && traditionalWinning) {
                             userWon();
                         }
                         flagCountLabel.setText(game.flagged + "");
@@ -121,7 +126,7 @@ public class Minesweeper {
                             throw new NumberFormatException();
                         }
                     } catch (NumberFormatException e) {
-                        tabbedPane1.setSelectedIndex(1);
+                        tabbedPane1.setSelectedIndex(2);
                         JOptionPane.showMessageDialog(mainPanel, "The minimum number of rows/columns is 15, and the maximum is 45.\n " +
                                 "You may only enter positive integers.\n" +
                                 "Bombs must be bigger than 0 and smaller than 50 in probability mode \n" +
@@ -187,7 +192,7 @@ public class Minesweeper {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 try {
-                    game.saveBoard(saveFileTextField.getText(), timeCounterLabel.getText());
+                    game.saveBoard(saveFileTextField.getText(), timeCounterLabel.getText(), traditionalWinning);
                 } catch (IOException e) {
                     JOptionPane.showMessageDialog(mainPanel, "Invalid file", "Nice try bro", JOptionPane.ERROR_MESSAGE);
                 } catch (NullPointerException e) {
@@ -217,6 +222,17 @@ public class Minesweeper {
                 flagCountLabel.setText(game.flagged + "");
 
                 setProperTableAttributes();
+
+                String winningCondition = time.split("_")[1];
+                traditionalWinning = false;
+                traditionalWinningCheckbox.setSelected(false);
+                if (winningCondition.equals("true")) {
+                    traditionalWinning = true;
+                    traditionalWinningCheckbox.setSelected(true);
+                }
+                updateWinningConditionCheckbox();
+
+                time = time.split("_")[0];
 
                 String[] times = time.split(":");
                 resetClock(Integer.parseInt(times[2]), Integer.parseInt(times[1]), Integer.parseInt(times[0]));
@@ -267,6 +283,21 @@ public class Minesweeper {
                 tabbedPane1.setSelectedIndex(3);
             }
         });
+        traditionalWinningCheckbox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                updateWinningConditionCheckbox();
+            }
+        });
+    }
+
+    private void updateWinningConditionCheckbox() {
+        traditionalWinning = traditionalWinningCheckbox.isSelected();
+        if (traditionalWinning) {
+            traditionalWinningCheckbox.setText("Flag winning");
+        } else {
+            traditionalWinningCheckbox.setText("Traditional winning");
+        }
     }
 
     private void setSelectionToCurrentMouse(MouseEvent e) {
@@ -331,7 +362,7 @@ public class Minesweeper {
     private void userLost() {
         if (db != null) {
             try {
-                db.addRecord(anonymousTextField.getText(), game.calculateUserScore(seconds, minutes, hours));
+                db.addRecord(anonymousTextField.getText(), game.calculateUserScore(seconds, minutes, hours, traditionalWinning, false));
                 db.updateTable();
                 scoreBoard.updateUI();
             } catch (SQLException e) {
@@ -340,14 +371,14 @@ public class Minesweeper {
         }
         ImageIcon lossIcon = new ImageIcon(getClass().getResource("/com/company/icon_64_lost.gif"));
         resetButton.setIcon(lossIcon);
-        JOptionPane.showMessageDialog(mainPanel, "You lost! Your score is " + game.calculateUserScore(seconds, minutes, hours), "Sad!", JOptionPane.INFORMATION_MESSAGE, lossIcon);
+        JOptionPane.showMessageDialog(mainPanel, "You lost! Your score is " + game.calculateUserScore(seconds, minutes, hours, traditionalWinning, false), "Sad!", JOptionPane.INFORMATION_MESSAGE, lossIcon);
         resetButton.doClick();
     }
 
     private void userWon() {
         if (db != null) {
             try {
-                db.addRecord(anonymousTextField.getText(), game.calculateUserScore(seconds, minutes, hours));
+                db.addRecord(anonymousTextField.getText(), game.calculateUserScore(seconds, minutes, hours, traditionalWinning, true));
                 db.updateTable();
                 scoreBoard.updateUI();
             } catch (SQLException e) {
@@ -356,7 +387,7 @@ public class Minesweeper {
         }
         ImageIcon winIcon = new ImageIcon(getClass().getResource("/com/company/icon_64_win.png"));
         resetButton.setIcon(winIcon);
-        JOptionPane.showMessageDialog(mainPanel, "You won! Your score is " + game.calculateUserScore(seconds, minutes, hours), "Congratulations!", JOptionPane.INFORMATION_MESSAGE, winIcon);
+        JOptionPane.showMessageDialog(mainPanel, "You won! Your score is " + game.calculateUserScore(seconds, minutes, hours, traditionalWinning, true), "Congratulations!", JOptionPane.INFORMATION_MESSAGE, winIcon);
         resetButton.doClick();
     }
 
@@ -499,7 +530,7 @@ public class Minesweeper {
         final Spacer spacer2 = new Spacer();
         panel4.add(spacer2, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         final JPanel panel5 = new JPanel();
-        panel5.setLayout(new GridLayoutManager(6, 2, new Insets(10, 10, 10, 10), -1, -1));
+        panel5.setLayout(new GridLayoutManager(7, 2, new Insets(10, 10, 10, 10), -1, -1));
         panel5.setMinimumSize(new Dimension(-1, -1));
         tabbedPane1.addTab("Options", panel5);
         rowsTextField = new JTextField();
@@ -521,16 +552,19 @@ public class Minesweeper {
         label4.setText("Bombs");
         panel5.add(label4, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final Spacer spacer3 = new Spacer();
-        panel5.add(spacer3, new GridConstraints(4, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        panel5.add(spacer3, new GridConstraints(5, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         bombValueLiteral = new JCheckBox();
         bombValueLiteral.setText("\"Bombs\" is a probability");
         panel5.add(bombValueLiteral, new GridConstraints(3, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JLabel label5 = new JLabel();
         label5.setText("Name");
-        panel5.add(label5, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel5.add(label5, new GridConstraints(6, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         anonymousTextField = new JTextField();
         anonymousTextField.setText("Anonymous");
-        panel5.add(anonymousTextField, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        panel5.add(anonymousTextField, new GridConstraints(6, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        traditionalWinningCheckbox = new JCheckBox();
+        traditionalWinningCheckbox.setText("Traditional winning");
+        panel5.add(traditionalWinningCheckbox, new GridConstraints(4, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel6 = new JPanel();
         panel6.setLayout(new GridLayoutManager(2, 1, new Insets(10, 10, 10, 10), -1, -1));
         tabbedPane1.addTab("Scores", panel6);
